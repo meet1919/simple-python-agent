@@ -25,7 +25,7 @@ def print_welcome_banner():
     left_content = Text()
     left_content.append("Welcome back!\n\n", style="bold white")
     left_content.append(logo, style="#A3BE8C")
-    left_content.append("\ngpt-5.4-mini · Agent Pro · CLI\n", style="grey62")
+    left_content.append("\ngpt-5.4-mini · Agent· CLI\n", style="grey62")
 
     right_content = Text()
     right_content.append("Tips for getting started\n", style="#A3BE8C")
@@ -51,8 +51,11 @@ async def main():
     if not os.getenv("OPENAI_API_KEY"):
         console.print("[bold red]Missing OPENAI_API_KEY in environment.[/]")
     
+    from core.self_authored_tools import register_self_authored_tools
+    
     tools = ToolRegistry()
     register_all_tools(tools)
+    register_self_authored_tools(tools)
 
     skills_dir = os.path.join(os.path.dirname(__file__), "skills")
     agent = MasterAgent(tools=tools, skills_dir=skills_dir)
@@ -68,8 +71,7 @@ async def main():
             if user_input.lower() in ['exit', 'quit']:
                 break
                 
-            with console.status("[dim italic #A3BE8C]Reasoning...[/]", spinner="dots"):
-                response = await agent.run(user_input)
+            response = await agent.run(user_input)
                 
             console.print(f"\n[grey82]{response}[/]", highlight=False)
             console.print("\n" + "[dim]─[/]" * console.width)

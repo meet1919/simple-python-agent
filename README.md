@@ -1,9 +1,12 @@
 # Simple Python Agent
 
+![CLI Agent](cli-agent.png)
+
 This is a minimal, framework-free Python agent built on top of the OpenAI API. It implements a skill routing mechanism, context sliding-window/compaction, and dynamic tool dispatch.
 
 ## Features
 - **Skill Router**: Automatically routes user requests to the appropriate skill based on chat history and intent.
+- **Autonomous Skill Creation**: Includes a native `skill-creator` allowing the agent to securely write, evaluate, and inject completely new skills and python tools into `self_authored` directories on the fly.
 - **Prefrontal Cortex (PFC) Subagent**: Optional middleware that intercepts complex tasks and uses biological reasoning frameworks (WMM, IC, TI, MC) to de-chunk raw input and establish strict goal parameters before hitting the main reasoning loop.
 - **Post-Action Reflection**: Skills can utilize a built-in `reflect` tool to evaluate tool outcomes directly against the active goal.
 - **Context Compaction**: Uses a cheaper model to summarize older messages and maintain context without blowing up the token budget.

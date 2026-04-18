@@ -33,5 +33,9 @@ class LLMClient:
             kwargs["tools"] = tools
             kwargs["tool_choice"] = "auto"
             
-        response = await self.client.chat.completions.create(**kwargs)
-        return response.choices[0].message
+        from rich.console import Console
+        console = Console()
+        
+        with console.status("[dim]Reasoning...[/]", spinner="dots"):
+            response = await self.client.chat.completions.create(**kwargs)
+            return response.choices[0].message

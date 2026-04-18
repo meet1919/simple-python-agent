@@ -48,12 +48,10 @@ class SkillRegistry:
         if not os.path.exists(self.skills_dir):
             return
             
-        for d in os.listdir(self.skills_dir):
-            folder_path = os.path.join(self.skills_dir, d)
-            if os.path.isdir(folder_path):
-                skill_file = os.path.join(folder_path, "SKILL.md")
-                if os.path.exists(skill_file):
-                    self._parse_skill_file(skill_file)
+        for root, dirs, files in os.walk(self.skills_dir):
+            if "SKILL.md" in files:
+                skill_file = os.path.join(root, "SKILL.md")
+                self._parse_skill_file(skill_file)
 
     def _parse_skill_file(self, config_path: str):
         with open(config_path, "r", encoding="utf-8") as f:
