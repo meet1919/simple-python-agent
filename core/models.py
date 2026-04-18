@@ -2,11 +2,20 @@ from dataclasses import dataclass, field
 from typing import List, Dict, Any, Optional
 
 @dataclass
+class PFCOutput:
+    refined_intent: str
+    assumptions: List[str]
+    ambiguities: List[str]
+    confidence: str
+    thinking_path: str
+
+@dataclass
 class Skill:
     name: str
     description: str
     instructions: str
     allowed_tools: List[str]
+    requires_pfc: bool = False
 
 @dataclass
 class Message:

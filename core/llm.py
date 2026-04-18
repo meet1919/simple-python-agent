@@ -4,7 +4,7 @@ from openai import AsyncOpenAI
 import json
 
 class LLMClient:
-    def __init__(self, main_model: str = "gpt-4o", fast_model: str = "gpt-4o-mini"):
+    def __init__(self, main_model: str = "gpt-5.4-mini", fast_model: str = "gpt-5.4-nano"):
         """
         Defaults to reasoning models, but uses API Key from environment.
         """

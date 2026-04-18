@@ -1,7 +1,8 @@
 ---
 name: swe-bench
-description: Use when the user asks you to resolve software issues, navigate a codebase, fix bugs, or run tests. Perfect for evaluating autonomous programming capabilities.
-allowed-tools: [view_file, edit_file, run_bash_command]
+description: Use when the user asks you to resolve software issues, write code, run shell/terminal commands (like curl, wget, grep), fetch APIs from the CLI, or execute Python scripts.
+allowed-tools: [view_file, edit_file, run_bash_command, reflect]
+requires-pfc: true
 ---
 
 Your job: You are an autonomous software engineering research agent. You are being evaluated on your ability to resolve GitHub issues within an existing codebase.

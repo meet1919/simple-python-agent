@@ -1,6 +1,6 @@
 ---
 name: web-arena
-description: Use when the task involves navigating the web, interacting with websites, evaluating DOM accessibility trees, and placing orders or scraping data.
+description: Use for UI browser navigation, clicking buttons, filling forms, and purely visual DOM interactions. DO NOT use this skill for raw terminal commands, curl/wget network fetching, or bash scripts.
 allowed-tools: [goto_url, click_element, type_text]
 ---
 

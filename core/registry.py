@@ -68,5 +68,12 @@ class SkillRegistry:
                 name = frontmatter.get("name", "Unknown")
                 desc = frontmatter.get("description", "")
                 allowed = frontmatter.get("allowed-tools", [])
+                requires_pfc = frontmatter.get("requires-pfc", False)
                 
-                self.skills[name] = Skill(name=name, description=desc, instructions=instructions, allowed_tools=allowed)
+                self.skills[name] = Skill(
+                    name=name, 
+                    description=desc, 
+                    instructions=instructions, 
+                    allowed_tools=allowed,
+                    requires_pfc=requires_pfc
+                )

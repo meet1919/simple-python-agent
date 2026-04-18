@@ -4,8 +4,10 @@ This is a minimal, framework-free Python agent built on top of the OpenAI API. I
 
 ## Features
 - **Skill Router**: Automatically routes user requests to the appropriate skill based on chat history and intent.
+- **Prefrontal Cortex (PFC) Subagent**: Optional middleware that intercepts complex tasks and uses biological reasoning frameworks (WMM, IC, TI, MC) to de-chunk raw input and establish strict goal parameters before hitting the main reasoning loop.
+- **Post-Action Reflection**: Skills can utilize a built-in `reflect` tool to evaluate tool outcomes directly against the active goal.
 - **Context Compaction**: Uses a cheaper model to summarize older messages and maintain context without blowing up the token budget.
-- **Skill System**: Defines skills simply via a `SKILL.md` file featuring YAML frontmatter for metadata (allowed tools, names) and markdown for instructions.
+- **Skill System**: Defines skills simply via a `SKILL.md` file featuring YAML frontmatter for metadata (allowed tools, names, and subagent flags) and markdown for instructions.
 - **Tool Dispatch**: Safely validates and executes python functions acting as tools.
 
 ## Installation
@@ -17,16 +19,17 @@ This is a minimal, framework-free Python agent built on top of the OpenAI API. I
 3. Copy `.env.example` to `.env` and add your OpenAI API key.
 
 ## Creating a Skill
-Create a new folder in the `skills` directory and add a `SKILL.md` file using the following format:
+Create a new folder in the `skills` directory and add a `SKILL.md` file using the following format. Add `requires-pfc: true` to route complicated reasoning requests through the subagent.
 
 ```markdown
 ---
-name: video-editing
-description: Use when the user wants to manipulate existing media.
-allowed-tools: [transcribe_audio, mix_audio_tracks]
+name: swe-bench
+description: Use when the user asks you to resolve software issues, navigate a codebase, fix bugs, or run tests. Perfect for evaluating autonomous programming capabilities.
+allowed-tools: [view_file, edit_file, run_bash_command, reflect]
+requires-pfc: true
 ---
 
-Your job: You are a video editor...
+Your job: You are an autonomous software engineering research agent...
 ```
 
 ## Running the Agent

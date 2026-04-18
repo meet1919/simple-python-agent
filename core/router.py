@@ -23,10 +23,13 @@ class SkillRouter:
             system += f"- {name}: {skill.description}\n"
 
         # Using fast model to route
-        # Pass a minimized context (just last 2 messages for flow)
-        messages_for_routing = []
-        for m in context.recent_messages[-2:]:
-            messages_for_routing.append(m.to_dict())
+        # Pass a minimized context (just last 2 conversational messages)
+        conversational_msgs = []
+        for m in context.recent_messages:
+            if m.role in ["user", "assistant"] and m.content:
+                conversational_msgs.append({"role": m.role, "content": m.content})
+                
+        messages_for_routing = conversational_msgs[-2:]
             
         messages_for_routing.append({"role": "user", "content": user_input})
 

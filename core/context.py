@@ -11,10 +11,12 @@ class ContextManager:
         self.compacted_summary: str = ""
         self.encoding = tiktoken.get_encoding("cl100k_base")
 
-    def build_system_prompt(self, skill: Skill = None) -> str:
+    def build_system_prompt(self, skill: Skill = None, extra: str = None) -> str:
         parts = [self.agent_persona]
         if skill:
             parts.append(skill.instructions)
+        if extra:
+            parts.append(f"### PFC Planning Input / Refined Context ###\n{extra}")
         return "\n\n---\n\n".join(parts)
 
     def build_messages(self) -> List[Dict[str, Any]]:
@@ -26,7 +28,7 @@ class ContextManager:
             })
             messages.append({"role": "assistant", "content": "Understood."})
             
-        messages.extend([m.to_dict() for m in self.recent_messages[-10:]])
+        messages.extend([m.to_dict() for m in self.recent_messages])
         return messages
 
     def append_user(self, content: str):
@@ -71,12 +73,21 @@ class ContextManager:
         return len(self.encoding.encode(text))
 
     async def compact(self):
-        # Keep last 4 raw messages, compress the rest
-        if len(self.recent_messages) <= 4:
+        # Keep recent messages, compress the rest. Find a safe split point around -6.
+        if len(self.recent_messages) <= 6:
             return
             
-        to_compact = self.recent_messages[:-4]
-        self.recent_messages = self.recent_messages[-4:]
+        target_split = len(self.recent_messages) - 6
+        
+        # Move backwards to ensure we don't sever a tool call from its assistant generator
+        while target_split > 0 and self.recent_messages[target_split].role == "tool":
+            target_split -= 1
+            
+        if target_split <= 0:
+            return # Cannot reliably compact without breaking context
+            
+        to_compact = self.recent_messages[:target_split]
+        self.recent_messages = self.recent_messages[target_split:]
         
         text_to_summarize = ""
         for m in to_compact:
