@@ -10,6 +10,11 @@ This is a minimal, framework-free Python agent built on top of the OpenAI API. I
 - **Skill System**: Defines skills simply via a `SKILL.md` file featuring YAML frontmatter for metadata (allowed tools, names, and subagent flags) and markdown for instructions.
 - **Tool Dispatch**: Safely validates and executes python functions acting as tools.
 
+## ⚠️ Security Warning
+
+**This is a highly experimental, physical agent framework.**
+Skills mapped to local executors (like `run_bash_command`) give the AI direct control over the host system. The framework uses a human-in-the-loop (HITL) prompt loop for shell executions by default, but it is highly recommended to run this framework inside a Docker container or VM during extended autonomous tests. Please read `SECURITY.md` for more information.
+
 ## Installation
 1. Clone the repository.
 2. Install dependencies:
