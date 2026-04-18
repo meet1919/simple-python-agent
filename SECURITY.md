@@ -4,11 +4,6 @@
 
 This is an **experimental research project** designed to act as an unconstrained, highly autonomous AI Agent. It is not currently recommended for production workloads.
 
-| Version | Supported          |
-| ------- | ------------------ |
-| 1.0.x   | :white_check_mark: |
-| < 1.0   | :x:                |
-
 ## Experimental Hazards
 
 This framework provides the LLM (Large Language Model) with **direct, interactive access to your local physical OS** via tools like `run_bash_command` and `edit_file`.
