@@ -1,13 +1,12 @@
 # Simple Python Agent
 
-![CLI Agent](cli-agent.png)
 
-This is a minimal, framework-free Python agent built on top of the OpenAI API. It implements a skill routing mechanism, context sliding-window/compaction, and dynamic tool dispatch.
+This is a minimal, framework-free Python agent built on top of the OpenAI API. It implements an OpenClaw-inspired dynamic JIT skill architecture, context sliding-window/compaction, and tool dispatch.
 
 ## Features
-- **Skill Router**: Automatically routes user requests to the appropriate skill based on chat history and intent.
+- **JIT Skill Architecture (OpenClaw-Inspired)**: Replaces static pre-routing with dynamic Just-In-Time skill loading. The agent receives an XML menu of available skills in its system prompt and fetches full instructions on-demand via a `read_skill_documentation` tool.
 - **Autonomous Skill Creation**: Includes a native `skill-creator` allowing the agent to securely write, evaluate, and inject completely new skills and python tools into `self_authored` directories on the fly.
-- **Prefrontal Cortex (PFC) Subagent**: Optional middleware that intercepts complex tasks and uses biological reasoning frameworks (WMM, IC, TI, MC) to de-chunk raw input and establish strict goal parameters before hitting the main reasoning loop.
+- **Prefrontal Cortex (PFC) Subagent**: Optional middleware that triggers automatically during JIT skill loading for complex tasks. It uses biological reasoning frameworks (WMM, IC, TI, MC) to de-chunk raw input, identify ambiguities, and inject cognitive preprocessing before the full skill executes.
 - **Post-Action Reflection**: Skills can utilize a built-in `reflect` tool to evaluate tool outcomes directly against the active goal.
 - **Context Compaction**: Uses a cheaper model to summarize older messages and maintain context without blowing up the token budget.
 - **Skill System**: Defines skills simply via a `SKILL.md` file featuring YAML frontmatter for metadata (allowed tools, names, and subagent flags) and markdown for instructions.
