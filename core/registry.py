@@ -73,5 +73,22 @@ class SkillRegistry:
                     description=desc, 
                     instructions=instructions, 
                     allowed_tools=allowed,
-                    requires_pfc=requires_pfc
+                    requires_pfc=requires_pfc,
+                    file_path=config_path
                 )
+
+    def generate_available_skills_xml(self) -> str:
+        if not self.skills:
+            return ""
+        
+        xml_parts = ["<available_skills>"]
+        for name, skill in self.skills.items():
+            xml_parts.append("  <skill>")
+            xml_parts.append(f"    <n>{name}</n>")
+            xml_parts.append(f"    <description>{skill.description}</description>")
+            xml_parts.append(f"    <location>{skill.file_path}</location>")
+            if skill.requires_pfc:
+                xml_parts.append(f"    <requires_pfc>true</requires_pfc>")
+            xml_parts.append("  </skill>")
+        xml_parts.append("</available_skills>")
+        return "\n".join(xml_parts)

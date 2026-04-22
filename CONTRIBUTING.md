@@ -21,3 +21,9 @@ If you discover critical bugs in the context-sliding or looping architecture, pl
 ### License
 
 By contributing to this repository, you agree to license your contributions under the MIT License included at the root of this project.
+
+### Note
+
+By submitting a pull request, you agree that your 
+contributions may be used by the maintainer in any 
+project, including commercial ones.

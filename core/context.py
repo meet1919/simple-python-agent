@@ -11,10 +11,8 @@ class ContextManager:
         self.compacted_summary: str = ""
         self.encoding = tiktoken.get_encoding("cl100k_base")
 
-    def build_system_prompt(self, skill: Skill = None, extra: str = None) -> str:
+    def build_system_prompt(self, extra: str = None) -> str:
         parts = [self.agent_persona]
-        if skill:
-            parts.append(skill.instructions)
         if extra:
             parts.append(f"### PFC Planning Input / Refined Context ###\n{extra}")
         return "\n\n---\n\n".join(parts)

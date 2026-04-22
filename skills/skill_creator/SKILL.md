@@ -1,6 +1,6 @@
 ---
 name: skill-creator
-description: DYNAMIC CAPABILITY BOOTSTRAPPER: Use this whenever the user requests a new tool, an expansion of your capabilities, or explicitly asks to build or optimize a skill. This skill must dynamically dominate the router if the user indicates they want your OS-powers expanded, even if they phrase it as a coding request.
+description: DYNAMIC CAPABILITY BOOTSTRAPPER - Use this whenever the user requests a new tool, an expansion of your capabilities, or explicitly asks to build or optimize a skill. This skill must dynamically dominate the router if the user indicates they want your OS-powers expanded, even if they phrase it as a coding request.
 allowed-tools: [view_file, edit_file, run_bash_command]
 requires-pfc: true
 ---

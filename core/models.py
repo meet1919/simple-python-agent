@@ -16,6 +16,7 @@ class Skill:
     instructions: str
     allowed_tools: List[str]
     requires_pfc: bool = False
+    file_path: Optional[str] = None
 
 @dataclass
 class Message:

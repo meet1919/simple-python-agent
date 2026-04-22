@@ -2,7 +2,7 @@ from core.models import Skill
 from core.llm import LLMClient
 from core.context import ContextManager
 from core.registry import ToolRegistry, SkillRegistry
-from core.router import SkillRouter
+# Removed unused import
 from core.pfc import PFCSubAgent
 from rich.console import Console
 from rich.panel import Panel
@@ -17,60 +17,87 @@ class MasterAgent:
         self.llm = LLMClient()
         self.registry = tools
         self.skill_registry = SkillRegistry(skills_dir)
-        self.skill_router = SkillRouter(self.skill_registry)
         self.pfc_tool = PFCSubAgent(self.llm)
         
-        base_persona = "You are a helpful, smart AI agent. You have access to specialized skills and tools."
+        menu_xml = self.skill_registry.generate_available_skills_xml()
+        base_persona = f"You are a helpful, smart AI agent. You have access to specialized skills and tools.\n\n{menu_xml}"
         self.context = ContextManager(agent_persona=base_persona, llm_client=self.llm)
-
-    async def run(self, user_input: str):
-        # 1. Router runs once (fast & cheap check)
-        skill = await self.skill_router.route(user_input, self.context)
         
-        if not skill and "general" in self.skill_registry.skills:
-            skill = self.skill_registry.skills["general"]
+        # Register the dynamic JIT skill reader
+        self.registry.register(
+            "read_skill_documentation", 
+            self._read_skill_documentation_tool, 
+            {
+                "name": "read_skill_documentation", 
+                "description": "Read the documentation of a specific skill by its file path. ALWAYS call this tool first if a relevant skill exists in available_skills.", 
+                "parameters": {
+                    "type": "object", 
+                    "properties": {"file_path": {"type": "string"}}, 
+                    "required": ["file_path"]
+                }
+            }
+        )
 
-        if skill:
-            console.print(f"\n[dim italic #A3BE8C]Router engaged skill: {skill.name}[/]")
-
-        planning_input = user_input
+    async def _read_skill_documentation_tool(self, file_path: str) -> str:
+        console.print(f"\n[dim italic #A3BE8C]Dynamically loading skill: {file_path}[/]")
+        skill = None
+        for s in self.skill_registry.skills.values():
+            if s.file_path == file_path:
+                skill = s
+                break
+                
+        if not skill:
+            return f"Error: Skill not found at {file_path}"
+            
+        content = skill.instructions
         
-        if skill and getattr(skill, "requires_pfc", False):
-            console.print("\n[dim italic #A3BE8C]PFC Subagent intercepting to refine prompt...[/]")
+        if skill.requires_pfc:
+            console.print(f"\n[dim italic #A3BE8C]Skill requires PFC. Running cognitive preprocessing...[/]")
+            
+            # Find the most recent user message
+            raw_input = "Unknown user request"
+            for msg in reversed(self.context.recent_messages):
+                if msg.role == "user" and msg.content:
+                    raw_input = msg.content
+                    break
+                    
             pfc_output = await self.pfc_tool.run(
-                raw_input=user_input,
+                raw_input=raw_input,
                 skill_context=skill.name,
                 chat_history=self.context.recent_messages
             )
             
-            if pfc_output.confidence == "low" and pfc_output.ambiguities:
-                return f"Before I proceed, I need to ask: {pfc_output.ambiguities[0]}"
-                
-            # Formatting the planning input with summarized thinking as requested by the user.
-            planning_input = f"Refined Intent: {pfc_output.refined_intent}\n" \
-                             f"PFC Summarized Thinking:\n{pfc_output.thinking_path}\n"
-                             
-            if pfc_output.ambiguities and pfc_output.confidence == "medium":
-                planning_input += f"\nAssumptions & Ambiguities Identified: {pfc_output.assumptions} / {pfc_output.ambiguities}"
-
-            # Print observability panel
             console.print(Panel(
                 f"[#A3BE8C]Refined Intent:[/] {pfc_output.refined_intent}\n"
                 f"[#A3BE8C]Thinking Path:[/] {pfc_output.thinking_path}\n"
                 f"[#A3BE8C]Confidence:[/] {pfc_output.confidence}",
-                title="[bold #A3BE8C]PFC Output[/]",
+                title="[bold #A3BE8C]PFC Output (Injected)[/]",
                 border_style="#A3BE8C",
                 padding=(0, 2)
             ))
 
-        system = self.context.build_system_prompt(skill, extra=planning_input)
-        
-        active_tools = []
-        if skill:
-            active_tools = self.registry.schemas_for(skill.allowed_tools)
+            if pfc_output.confidence == "low" and pfc_output.ambiguities:
+                return f"Before I proceed, I need to ask: {pfc_output.ambiguities[0]}"
+                
+            pfc_text = f"\n\n### AUTOMATIC PFC COGNITIVE ANALYSIS ###\n" \
+                       f"Refined Intent: {pfc_output.refined_intent}\n" \
+                       f"Thinking Path: \n{pfc_output.thinking_path}\n" \
+                       f"Confidence: {pfc_output.confidence}\n"
+            if pfc_output.ambiguities and pfc_output.confidence == "medium":
+                pfc_text += f"Assumptions & Ambiguities: {pfc_output.assumptions} / {pfc_output.ambiguities}\n"
+                
+            content += pfc_text
+            
+        return content
 
+    async def run(self, user_input: str):
         self.context.append_user(user_input)
-
+        
+        system = self.context.build_system_prompt()
+        
+        current_tool_names = list(self.registry._schemas.keys())
+        active_tools = self.registry.schemas_for(current_tool_names)
+        
         iteration = 0
         while iteration < MAX_ITERATIONS:
             iteration += 1
@@ -96,6 +123,9 @@ class MasterAgent:
                     name=call.function.name,
                     arguments=call.function.arguments
                 )
+                if call.function.name == "reflect":
+                    console.print(f"[dim italic #81A1C1]Reflection result: {result}[/]")
+                    
                 self.context.append_tool_result(call.id, result, call.function.name)
 
             # Step 3: Guard memory size
