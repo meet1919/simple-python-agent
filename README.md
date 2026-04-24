@@ -5,6 +5,7 @@ This is a minimal, framework-free Python agent built on top of the OpenAI API. I
 
 ## Features
 - **JIT Skill Architecture (OpenClaw-Inspired)**: Replaces static pre-routing with dynamic Just-In-Time skill loading. The agent receives an XML menu of available skills in its system prompt and fetches full instructions on-demand via a `read_skill_documentation` tool.
+- **Dynamic Tool Binding**: Prevents "tool bloat" by strictly scoping tool access. The agent is initialized with minimal global tools. When a skill is loaded, the agent dynamically binds only the tools specified in that skill's `allowed-tools` array, replacing any previously bound tools.
 - **Autonomous Skill Creation**: Includes a native `skill-creator` allowing the agent to securely write, evaluate, and inject completely new skills and python tools into `self_authored` directories on the fly.
 - **Prefrontal Cortex (PFC) Subagent**: Optional middleware that triggers automatically during JIT skill loading for complex tasks. It uses biological reasoning frameworks (WMM, IC, TI, MC) to de-chunk raw input, identify ambiguities, and inject cognitive preprocessing before the full skill executes.
 - **Post-Action Reflection**: Skills can utilize a built-in `reflect` tool to evaluate tool outcomes directly against the active goal.

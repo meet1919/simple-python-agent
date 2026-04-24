@@ -23,6 +23,9 @@ class MasterAgent:
         base_persona = f"You are a helpful, smart AI agent. You have access to specialized skills and tools.\n\n{menu_xml}"
         self.context = ContextManager(agent_persona=base_persona, llm_client=self.llm)
         
+        self.current_skill_tools = []
+        self.global_tools = ["read_skill_documentation", "reflect"]
+        
         # Register the dynamic JIT skill reader
         self.registry.register(
             "read_skill_documentation", 
@@ -48,6 +51,12 @@ class MasterAgent:
                 
         if not skill:
             return f"Error: Skill not found at {file_path}"
+            
+        self.current_skill_tools = skill.allowed_tools
+        if self.current_skill_tools:
+            console.print(f"[dim italic #81A1C1]Bound skill-specific tools: {', '.join(self.current_skill_tools)}[/]")
+        else:
+            console.print(f"[dim italic #81A1C1]Skill loaded, no specific tools required.[/]")
             
         content = skill.instructions
         
@@ -95,12 +104,15 @@ class MasterAgent:
         
         system = self.context.build_system_prompt()
         
-        current_tool_names = list(self.registry._schemas.keys())
-        active_tools = self.registry.schemas_for(current_tool_names)
-        
         iteration = 0
         while iteration < MAX_ITERATIONS:
             iteration += 1
+            
+            allowed_tool_names = [t for t in self.global_tools if t in self.registry._schemas]
+            allowed_tool_names.extend([t for t in self.current_skill_tools if t in self.registry._schemas])
+            allowed_tool_names = list(set(allowed_tool_names))
+            
+            active_tools = self.registry.schemas_for(allowed_tool_names)
             
             # Step 1: LLM Call
             response = await self.llm.call(
