@@ -2,8 +2,8 @@ from core.models import Skill
 from core.llm import LLMClient
 from core.context import ContextManager
 from core.registry import ToolRegistry, SkillRegistry
-# Removed unused import
 from core.pfc import PFCSubAgent
+from core.memory import ProceduralMemory
 from rich.console import Console
 from rich.panel import Panel
 
@@ -18,6 +18,7 @@ class MasterAgent:
         self.registry = tools
         self.skill_registry = SkillRegistry(skills_dir)
         self.pfc_tool = PFCSubAgent(self.llm)
+        self.procedural_memory = ProceduralMemory()
         
         menu_xml = self.skill_registry.generate_available_skills_xml()
         base_persona = f"You are a helpful, smart AI agent. You have access to specialized skills and tools.\n\n{menu_xml}"
@@ -95,12 +96,24 @@ class MasterAgent:
             if pfc_output.ambiguities and pfc_output.confidence == "medium":
                 pfc_text += f"Assumptions & Ambiguities: {pfc_output.assumptions} / {pfc_output.ambiguities}\n"
                 
+            self.current_structural_signature = pfc_output.structural_signature
+            
+            trace = self.procedural_memory.recall_trace(pfc_output.structural_signature)
+            if trace:
+                console.print(f"\n[bold #EBCB8B]Procedural Memory Match Found! Injecting myelinated pathway...[/]")
+                pfc_text += f"\n### PROCEDURAL MEMORY (Myelinated Pathway) ###\n" \
+                            f"You have solved a structurally identical task before. " \
+                            f"Here is the successful solution path: {trace}\n" \
+                            f"Use this path to execute the task efficiently.\n"
+                
             content += pfc_text
             
         return content
 
     async def run(self, user_input: str):
         self.context.append_user(user_input)
+        self.current_structural_signature = None
+        self.current_trace = []
         
         system = self.context.build_system_prompt()
         
@@ -126,10 +139,15 @@ class MasterAgent:
             # Step 2: Tool Execution if needed
             if not getattr(response, "tool_calls", None):
                 # Text response received, terminate loop
+                if self.current_structural_signature:
+                    self.current_trace.append(f"assistant: {response.content[:100]}...")
+                    self.procedural_memory.store_trace(self.current_structural_signature, self.current_trace)
+                    console.print(f"[dim italic #A3BE8C]Stored solution trace in procedural memory.[/]")
                 return response.content
 
             for call in response.tool_calls:
                 console.print(f"\n[dim italic #81A1C1]Calling tool: {call.function.name}[/]")
+                self.current_trace.append(call.function.name)
                 result = await self.registry.dispatch(
                     tool_call_id=call.id,
                     name=call.function.name,

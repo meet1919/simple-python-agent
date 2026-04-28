@@ -8,6 +8,7 @@ class PFCOutput:
     ambiguities: List[str]
     confidence: str
     thinking_path: str
+    structural_signature: Dict[str, Any] = field(default_factory=dict)
 
 @dataclass
 class Skill:

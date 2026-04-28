@@ -32,9 +32,13 @@ class PFCSubAgent:
                     "assumptions": {"type": "array", "items": {"type": "string"}},
                     "ambiguities": {"type": "array", "items": {"type": "string"}},
                     "confidence": {"type": "string", "enum": ["high", "medium", "low"]},
-                    "thinking_path": {"type": "string", "description": "Summary of reasoning through WMM, TI, IC, MC"}
+                    "thinking_path": {"type": "string", "description": "Summary of reasoning through WMM, TI, IC, MC"},
+                    "structural_signature": {
+                        "type": "object",
+                        "description": "A dictionary of 3-5 key-value pairs defining the abstract structure of the task, ignoring specific content (e.g. {'workflow_type': 'file_editing', 'requires_search': true})."
+                    }
                 },
-                "required": ["refined_intent", "assumptions", "ambiguities", "confidence", "thinking_path"]
+                "required": ["refined_intent", "assumptions", "ambiguities", "confidence", "thinking_path", "structural_signature"]
             }
         }
         
@@ -68,8 +72,9 @@ class PFCSubAgent:
                 assumptions=args.get("assumptions", []),
                 ambiguities=args.get("ambiguities", []),
                 confidence=args.get("confidence", "high"),
-                thinking_path=args.get("thinking_path", "")
+                thinking_path=args.get("thinking_path", ""),
+                structural_signature=args.get("structural_signature", {})
             )
             
         # Fallback if no tool called
-        return PFCOutput(raw_input, [], [], "high", "Fallback execution.")
+        return PFCOutput(raw_input, [], [], "high", "Fallback execution.", {})
